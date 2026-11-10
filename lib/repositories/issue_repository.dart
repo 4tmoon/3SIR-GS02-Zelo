@@ -2,19 +2,24 @@ import 'dart:math';
 
 import '../database/app_database.dart';
 import '../models/issue.dart';
+import '../services/route_service.dart';
 
+/// Regras de negócio das ocorrências (as telas só chamam estes métodos).
 class IssueRepository {
   IssueRepository._();
   static final IssueRepository instance = IssueRepository._();
 
   final AppDatabase _db = AppDatabase.instance;
+  final RouteService _geocoder = RouteService();
 
   Future<List<Issue>> fetchAll() => _db.getAll();
 
-  List<Issue> filter(List<Issue> issues, {required String category, required String query}) {
+  List<Issue> filter(List<Issue> issues,
+      {required String category, required String query}) {
     final text = query.trim().toLowerCase();
     return issues.where((issue) {
-      final matchesCategory = category == IssueCategory.filterAll || issue.category == category;
+      final matchesCategory =
+          category == IssueCategory.filterAll || issue.category == category;
       final matchesText = text.isEmpty ||
           issue.title.toLowerCase().contains(text) ||
           issue.address.toLowerCase().contains(text);
@@ -33,7 +38,9 @@ class IssueRepository {
       supportedByMe: supported,
     );
     updated = updated.copyWith(
-      status: updated.reachedThreshold ? IssueStatus.formal : IssueStatus.collecting,
+      status: updated.reachedThreshold
+          ? IssueStatus.formal
+          : IssueStatus.collecting,
     );
     await _db.update(updated);
     return updated;
@@ -47,8 +54,19 @@ class IssueRepository {
     String imageData = '',
   }) async {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // Localização real a partir do endereço; se a busca falhar, usa uma posição
+    // aproximada no centro de SP (com pequena variação para os pinos não se sobreporem).
     final random = Random();
-    // Localização simulada (centro de SP com pequena variação), pois o app não usa GPS.
+    var latitude = -23.5505 + (random.nextDouble() - 0.5) * 0.04;
+    var longitude = -46.6333 + (random.nextDouble() - 0.5) * 0.04;
+    try {
+      final place =
+          await _geocoder.geocode(address, timeout: const Duration(seconds: 8));
+      latitude = place.location.latitude;
+      longitude = place.location.longitude;
+    } catch (_) {}
+
     final issue = Issue(
       id: id,
       title: title.trim(),
@@ -59,8 +77,8 @@ class IssueRepository {
       likes: 1,
       activeRegionalUsers: 50,
       status: IssueStatus.collecting,
-      latitude: -23.5505 + (random.nextDouble() - 0.5) * 0.04,
-      longitude: -46.6333 + (random.nextDouble() - 0.5) * 0.04,
+      latitude: latitude,
+      longitude: longitude,
       supportedByMe: true,
     );
     await _db.insert(issue);
