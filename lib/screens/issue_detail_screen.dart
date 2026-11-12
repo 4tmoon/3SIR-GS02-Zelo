@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../models/comment.dart';
 import '../models/issue.dart';
 import '../models/issue_history.dart';
 import '../repositories/issue_repository.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_network_image.dart';
+import '../widgets/category_style.dart';
+import '../widgets/comments_section.dart';
 import '../widgets/issue_timeline.dart';
 import '../widgets/status_badge.dart';
 import '../widgets/support_progress.dart';
@@ -23,11 +26,24 @@ class IssueDetailScreen extends StatefulWidget {
 class _IssueDetailScreenState extends State<IssueDetailScreen> {
   late Issue _issue;
   bool _saving = false;
+  List<Comment> _comments = [];
 
   @override
   void initState() {
     super.initState();
     _issue = widget.issue;
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    final data = await IssueRepository.instance.fetchComments(_issue.id);
+    if (mounted) setState(() => _comments = data);
+  }
+
+  Future<void> _addComment(String text) async {
+    final comment = await IssueRepository.instance.addComment(_issue.id, text);
+    if (!mounted) return;
+    setState(() => _comments = [comment, ..._comments]);
   }
 
   void _showMessage(String message) {
@@ -91,6 +107,12 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                     runSpacing: 4,
                     children: [
                       StatusBadge(label: _issue.category),
+                      StatusBadge(
+                        label: 'Gravidade ${IssueSeverity.label(_issue.severity).toLowerCase()}',
+                        icon: Icons.priority_high,
+                        color: SeverityStyle.color(_issue.severity),
+                        background: SeverityStyle.soft(_issue.severity),
+                      ),
                       StatusBadge(
                         label: _issue.status,
                         icon: statusIcon,
@@ -162,6 +184,11 @@ class _IssueDetailScreenState extends State<IssueDetailScreen> {
                         ),
                       ],
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  AppCard(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: CommentsSection(comments: _comments, onSend: _addComment),
                   ),
                 ],
               ),

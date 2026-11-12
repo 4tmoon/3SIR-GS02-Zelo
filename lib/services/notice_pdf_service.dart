@@ -1,41 +1,39 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart' show networkImage;
 
 import '../models/issue.dart';
 
-/// Monta o ofício formal em PDF de uma ocorrência que atingiu a meta de apoio.
+// Monta o ofício formal em PDF de uma ocorrência que atingiu a meta de apoio.
 class NoticePdfService {
   static const _city = 'São Paulo';
   static const _recipient = 'Prefeitura Municipal de São Paulo';
   static const _months = [
-    'janeiro',
-    'fevereiro',
-    'março',
-    'abril',
-    'maio',
-    'junho',
-    'julho',
-    'agosto',
-    'setembro',
-    'outubro',
-    'novembro',
-    'dezembro',
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
   ];
 
-  /// Ex.: "0002/2026".
+  // Ex.: "0002/2026".
   String noticeNumber(Issue issue) {
     final id = issue.id;
-    final tail =
-        id.length > 4 ? id.substring(id.length - 4) : id.padLeft(4, '0');
+    final tail = id.length > 4 ? id.substring(id.length - 4) : id.padLeft(4, '0');
     return '$tail/${DateTime.now().year}';
   }
 
-  String fileName(Issue issue) =>
-      'oficio_${noticeNumber(issue).replaceAll('/', '_')}.pdf';
+  String fileName(Issue issue) => 'oficio_${noticeNumber(issue).replaceAll('/', '_')}.pdf';
+
+  String verificationCode(Issue issue) {
+    var hash = 7;
+    final input = '${issue.id}|${issue.title}|${issue.address}|${issue.activeRegionalUsers}';
+    for (final unit in input.codeUnits) {
+      hash = (hash * 31 + unit) & 0xFFFFFFFF;
+    }
+    return 'ZL-${hash.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+  }
 
   String _two(int value) => value.toString().padLeft(2, '0');
 
@@ -43,8 +41,11 @@ class NoticePdfService {
     try {
       if (url.isEmpty) return null;
       if (url.startsWith('data:')) {
-        return pw.MemoryImage(
-            base64Decode(url.substring(url.indexOf(',') + 1)));
+        return pw.MemoryImage(base64Decode(url.substring(url.indexOf(',') + 1)));
+      }
+      if (url.startsWith('assets/')) {
+        final data = await rootBundle.load(url);
+        return pw.MemoryImage(data.buffer.asUint8List());
       }
       return await networkImage(url).timeout(const Duration(seconds: 8));
     } catch (_) {
@@ -52,8 +53,7 @@ class NoticePdfService {
     }
   }
 
-  pw.TableRow _row(
-      String label, String value, pw.TextStyle bold, pw.TextStyle base) {
+  pw.TableRow _row(String label, String value, pw.TextStyle bold, pw.TextStyle base) {
     return pw.TableRow(
       children: [
         pw.Container(
@@ -74,14 +74,14 @@ class NoticePdfService {
     final number = noticeNumber(issue);
     final photo = await _loadPhoto(issue.imageUrl);
     final percent = (issue.progress * 100).round();
+    final code = verificationCode(issue);
     final threshold = (Issue.thresholdRatio * 100).round();
 
     final base = pw.TextStyle(fontSize: 11, lineSpacing: 3);
     final bold = pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold);
     final small = pw.TextStyle(fontSize: 9, color: PdfColors.grey700);
 
-    final doc =
-        pw.Document(title: 'Ofício Nº $number', author: 'Plataforma Zelo');
+    final doc = pw.Document(title: 'Ofício Nº $number', author: 'Plataforma Zelo');
 
     doc.addPage(
       pw.MultiPage(
@@ -89,9 +89,7 @@ class NoticePdfService {
         margin: const pw.EdgeInsets.fromLTRB(56, 48, 56, 48),
         footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
-          child: pw.Text(
-              'Página ${context.pageNumber} de ${context.pagesCount}',
-              style: small),
+          child: pw.Text('Página ${context.pageNumber} de ${context.pagesCount}', style: small),
         ),
         build: (context) => [
           // Cabeçalho
@@ -107,9 +105,7 @@ class NoticePdfService {
                   ),
                 ),
                 pw.SizedBox(height: 2),
-                pw.Text(
-                    'Plataforma de registro e apoio comunitário a ocorrências urbanas',
-                    style: small),
+                pw.Text('Plataforma de registro e apoio comunitário a ocorrências urbanas', style: small),
               ],
             ),
           ),
@@ -132,11 +128,9 @@ class NoticePdfService {
 
           // Destinatário e assunto
           pw.Text('À $_recipient', style: bold),
-          pw.Text('Secretaria responsável pela zeladoria urbana da região',
-              style: base),
+          pw.Text('Secretaria responsável pela zeladoria urbana da região', style: base),
           pw.SizedBox(height: 14),
-          pw.Text('Assunto: Solicitação de providências - ${issue.title}',
-              style: bold),
+          pw.Text('Assunto: Solicitação de providências - ${issue.title}', style: bold),
           pw.SizedBox(height: 14),
 
           // Texto
@@ -178,8 +172,8 @@ class NoticePdfService {
                 bold,
                 base,
               ),
-              _row('Meta de apoio', 'Mínimo de $threshold% - atingida', bold,
-                  base),
+              _row('Meta de apoio', 'Mínimo de $threshold% - atingida', bold, base),
+              _row('Gravidade', IssueSeverity.label(issue.severity), bold, base),
               _row('Situação', issue.status, bold, base),
             ],
           ),
@@ -218,7 +212,27 @@ class NoticePdfService {
               ],
             ),
           ),
-          pw.SizedBox(height: 18),
+          pw.SizedBox(height: 16),
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.BarcodeWidget(
+                barcode: pw.Barcode.qrCode(),
+                data: 'ZELO|OFICIO $number|$code',
+                width: 70,
+                height: 70,
+              ),
+              pw.SizedBox(width: 12),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Código de autenticação do documento', style: small),
+                  pw.Text(code, style: bold),
+                ],
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 12),
           pw.Text(
             'Documento gerado automaticamente pela plataforma Zelo em '
             '${_two(now.day)}/${_two(now.month)}/${now.year} às ${_two(now.hour)}:${_two(now.minute)}. '

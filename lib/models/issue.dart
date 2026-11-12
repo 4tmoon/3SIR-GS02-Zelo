@@ -16,6 +16,20 @@ class IssueDecision {
   static const accepted = 'accepted';
 }
 
+class IssueSeverity {
+  static const low = 'low';
+  static const medium = 'medium';
+  static const high = 'high';
+  static const all = [low, medium, high];
+
+  static String label(String value) =>
+      value == low ? 'Baixa' : (value == high ? 'Alta' : 'Média');
+
+  static int rank(String value) => value == high ? 3 : (value == medium ? 2 : 1);
+}
+
+enum IssueSort { recent, mostSupported, nearGoal, urgent }
+
 class Issue {
   /// Percentual de apoio necessário para gerar a solicitação formal.
   static const double thresholdRatio = 0.8;
@@ -33,11 +47,13 @@ class Issue {
   final double longitude;
   final bool supportedByMe;
 
+  // Histórico da solicitação
   final DateTime? createdAt;
   final DateTime? reachedAt;
   final DateTime? noticeGeneratedAt;
   final DateTime? decisionAt;
   final String? decision;
+  final String severity;
 
   const Issue({
     required this.id,
@@ -57,6 +73,7 @@ class Issue {
     this.noticeGeneratedAt,
     this.decisionAt,
     this.decision,
+    this.severity = IssueSeverity.medium,
   });
 
   int get goalSupports => (activeRegionalUsers * 8 + 9) ~/ 10;
@@ -94,6 +111,7 @@ class Issue {
       noticeGeneratedAt: noticeGeneratedAt ?? this.noticeGeneratedAt,
       decisionAt: decisionAt ?? this.decisionAt,
       decision: decision ?? this.decision,
+      severity: severity,
     );
   }
 
@@ -115,6 +133,7 @@ class Issue {
         'noticeGeneratedAt': noticeGeneratedAt?.millisecondsSinceEpoch,
         'decisionAt': decisionAt?.millisecondsSinceEpoch,
         'decision': decision,
+        'severity': severity,
       };
 
   static DateTime? _toDate(Object? value) =>
@@ -138,5 +157,6 @@ class Issue {
         noticeGeneratedAt: _toDate(map['noticeGeneratedAt']),
         decisionAt: _toDate(map['decisionAt']),
         decision: map['decision'] as String?,
+        severity: (map['severity'] ?? IssueSeverity.medium) as String,
       );
 }

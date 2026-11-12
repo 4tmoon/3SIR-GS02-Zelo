@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'map_screen.dart';
 import 'notices_screen.dart';
+import 'stats_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -12,7 +13,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  static const _tabs = [HomeScreen(), MapScreen(), NoticesScreen()];
+  static const _tabs = [HomeScreen(), MapScreen(), NoticesScreen(), StatsScreen()];
   int _selectedIndex = 0;
 
   @override
@@ -26,6 +27,7 @@ class _MainScreenState extends State<MainScreen> {
           NavigationDestination(icon: Icon(Icons.list_alt), label: 'Feed'),
           NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Mapa'),
           NavigationDestination(icon: Icon(Icons.gavel), label: 'Ofícios'),
+          NavigationDestination(icon: Icon(Icons.insights), label: 'Estatísticas'),
         ],
       ),
     );

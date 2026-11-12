@@ -21,8 +21,7 @@ class RouteResult {
     return RouteResult(
       // O GeoJSON vem como [longitude, latitude].
       points: coordinates
-          .map(
-              (c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
+          .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
           .toList(),
       distanceMeters: (json['distance'] as num).toDouble(),
       durationSeconds: (json['duration'] as num).toDouble(),
@@ -41,12 +40,9 @@ class RouteResult {
   }
 }
 
-/// Uma ocorrência encontrada perto da rota.
 class RouteIssue {
   final Issue issue;
   final double distanceMeters;
-
-  /// Posição aproximada ao longo do trajeto (usada para ordenar).
   final int routePosition;
 
   const RouteIssue({
@@ -54,4 +50,11 @@ class RouteIssue {
     required this.distanceMeters,
     required this.routePosition,
   });
+}
+
+class RouteOption {
+  final RouteResult route;
+  final List<RouteIssue> issues;
+
+  const RouteOption({required this.route, required this.issues});
 }

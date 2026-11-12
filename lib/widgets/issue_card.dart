@@ -4,6 +4,7 @@ import '../models/issue.dart';
 import '../theme/app_theme.dart';
 import 'app_card.dart';
 import 'app_network_image.dart';
+import 'category_style.dart';
 import 'status_badge.dart';
 import 'support_progress.dart';
 
@@ -24,7 +25,21 @@ class IssueCard extends StatelessWidget {
           Stack(
             children: [
               AppNetworkImage(url: issue.imageUrl, width: double.infinity, height: 170, radius: 0),
-              Positioned(top: 10, left: 10, child: StatusBadge(label: issue.category, background: Colors.white)),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Row(
+                  children: [
+                    StatusBadge(label: issue.category, background: Colors.white),
+                    const SizedBox(width: 6),
+                    StatusBadge(
+                      label: 'Gravidade ${IssueSeverity.label(issue.severity).toLowerCase()}',
+                      color: SeverityStyle.color(issue.severity),
+                      background: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
               if (issue.hasNotice)
                 const Positioned(
                   top: 10,

@@ -14,3 +14,10 @@ class PlaceResult {
         ),
       );
 }
+
+class ReversePlace {
+  final String address;
+  final String? postcode;
+
+  const ReversePlace({required this.address, this.postcode});
+}

@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+
 import '../theme/app_theme.dart';
 
 class AppNetworkImage extends StatelessWidget {
+  static final Map<String, Uint8List> _cache = {};
+
   final String url;
   final double? width;
   final double height;
@@ -23,26 +29,41 @@ class AppNetworkImage extends StatelessWidget {
         child: child,
       );
 
+  Widget _fallback() => _placeholder(
+        const Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted),
+      );
+
+  Uint8List _decode() => _cache.putIfAbsent(
+        url,
+        () => base64Decode(url.substring(url.indexOf(',') + 1)),
+      );
+
   @override
   Widget build(BuildContext context) {
-    if (url.startsWith('assets/') || url.startsWith('images/')) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: Image.asset(
-          url,
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stack) => _placeholder(
-            const Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted),
-          ),
-        ),
+    final Widget image;
+    if (url.isEmpty) {
+      image = _placeholder(
+        const Icon(Icons.photo_outlined, size: 32, color: AppColors.textMuted),
       );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: Image.network(
+    } else if (url.startsWith('assets/')) {
+      image = Image.asset(
+        url,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) => _fallback(),
+      );
+    } else if (url.startsWith('data:')) {
+      image = Image.memory(
+        _decode(),
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stack) => _fallback(),
+      );
+    } else {
+      image = Image.network(
         url,
         width: width,
         height: height,
@@ -54,10 +75,9 @@ class AppNetworkImage extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )),
-        errorBuilder: (context, error, stack) => _placeholder(
-          const Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted),
-        ),
-      ),
-    );
+        errorBuilder: (context, error, stack) => _fallback(),
+      );
+    }
+    return ClipRRect(borderRadius: BorderRadius.circular(radius), child: image);
   }
 }
