@@ -17,7 +17,17 @@ O projeto alinha-se aos Objetivos de Desenvolvimento Sustentável (ODS) da ONU, 
 6. **Ofícios públicos**: Lista os ofícios formais gerados a partir das metas atingidas, com opções de visualizar, imprimir ou baixar o PDF.
 
 ## Prints das telas
-[pendente]
+| | |
+|:---:|:---:|
+| <img src="assets/images/image-01.png" width="220" alt="Tela 01"> | <img src="assets/images/image-02.png" width="220" alt="Tela 02"> |
+| <img src="assets/images/image-03.png" width="220" alt="Tela 03"> | <img src="assets/images/image-04.png" width="220" alt="Tela 04"> |
+| <img src="assets/images/image-05.png" width="220" alt="Tela 05"> | <img src="assets/images/image-06.png" width="220" alt="Tela 06"> |
+| <img src="assets/images/image-07.png" width="220" alt="Tela 07"> | <img src="assets/images/image-08.png" width="220" alt="Tela 08"> |
+| <img src="assets/images/image-09.png" width="220" alt="Tela 09"> | <img src="assets/images/image-10.png" width="220" alt="Tela 10"> |
+| <img src="assets/images/image-11.png" width="220" alt="Tela 11"> | <img src="assets/images/image-12.png" width="220" alt="Tela 12"> |
+| <img src="assets/images/image-13.png" width="220" alt="Tela 13"> | <img src="assets/images/image-14.png" width="220" alt="Tela 14"> |
+| <img src="assets/images/image-16.png" width="220" alt="Tela 16"> | <img src="assets/images/image-17.png" width="220" alt="Tela 17"> |
+| | |
 
 ## API utilizada
 * **ViaCEP**: API pública REST para consulta automática de endereços através do CEP informado no cadastro.
@@ -34,9 +44,8 @@ O projeto segue uma arquitetura limpa e modularizada em Flutter:
 
 ## Desenvolvedor(es)
 Desenvolvido por:
-* RM559049 - Anaí Rojas
-* RM557686 - Matheus Amaral
+* RM559049 - Anaí Villca Rojas
+* RM557686 - Matheus Amaral de Camargo Cardoso Lima
 
 ## Vídeo pitch
-[Clique aqui para assistir ao vídeo pitch do projeto](insira_o_link_do_video_aqui)
-[pendente]
+[Clique aqui para assistir ao vídeo pitch do projeto](pendente)
