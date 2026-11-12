@@ -1,6 +1,5 @@
 import 'package:latlong2/latlong.dart';
 
-/// Modelo do JSON retornado pela busca de endereços (Nominatim / OpenStreetMap).
 class PlaceResult {
   final String name;
   final LatLng location;

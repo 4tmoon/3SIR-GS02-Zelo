@@ -7,8 +7,13 @@ class IssueCategory {
 }
 
 class IssueStatus {
-  static const collecting = 'Em coleta';
+  static const collecting = 'Em Coleta';
   static const formal = 'Solicitação Formal Gerada';
+  static const accepted = 'Aceita pela prefeitura';
+}
+
+class IssueDecision {
+  static const accepted = 'accepted';
 }
 
 class Issue {
@@ -28,6 +33,12 @@ class Issue {
   final double longitude;
   final bool supportedByMe;
 
+  final DateTime? createdAt;
+  final DateTime? reachedAt;
+  final DateTime? noticeGeneratedAt;
+  final DateTime? decisionAt;
+  final String? decision;
+
   const Issue({
     required this.id,
     required this.title,
@@ -41,15 +52,30 @@ class Issue {
     required this.latitude,
     required this.longitude,
     this.supportedByMe = false,
+    this.createdAt,
+    this.reachedAt,
+    this.noticeGeneratedAt,
+    this.decisionAt,
+    this.decision,
   });
 
-  bool get reachedThreshold => likes >= activeRegionalUsers * thresholdRatio;
-
+  int get goalSupports => (activeRegionalUsers * 8 + 9) ~/ 10;
+  int get supportsMissing => likes >= goalSupports ? 0 : goalSupports - likes;
+  bool get reachedThreshold => likes >= goalSupports;
+  bool get hasNotice => noticeGeneratedAt != null;
   double get progress => activeRegionalUsers == 0
       ? 0.0
       : (likes / activeRegionalUsers).clamp(0.0, 1.0).toDouble();
 
-  Issue copyWith({int? likes, String? status, bool? supportedByMe}) {
+  Issue copyWith({
+    int? likes,
+    String? status,
+    bool? supportedByMe,
+    DateTime? reachedAt,
+    DateTime? noticeGeneratedAt,
+    DateTime? decisionAt,
+    String? decision,
+  }) {
     return Issue(
       id: id,
       title: title,
@@ -63,6 +89,11 @@ class Issue {
       latitude: latitude,
       longitude: longitude,
       supportedByMe: supportedByMe ?? this.supportedByMe,
+      createdAt: createdAt,
+      reachedAt: reachedAt ?? this.reachedAt,
+      noticeGeneratedAt: noticeGeneratedAt ?? this.noticeGeneratedAt,
+      decisionAt: decisionAt ?? this.decisionAt,
+      decision: decision ?? this.decision,
     );
   }
 
@@ -79,7 +110,15 @@ class Issue {
         'latitude': latitude,
         'longitude': longitude,
         'supported': supportedByMe ? 1 : 0,
+        'createdAt': createdAt?.millisecondsSinceEpoch,
+        'reachedAt': reachedAt?.millisecondsSinceEpoch,
+        'noticeGeneratedAt': noticeGeneratedAt?.millisecondsSinceEpoch,
+        'decisionAt': decisionAt?.millisecondsSinceEpoch,
+        'decision': decision,
       };
+
+  static DateTime? _toDate(Object? value) =>
+      value == null ? null : DateTime.fromMillisecondsSinceEpoch(value as int);
 
   factory Issue.fromMap(Map<String, dynamic> map) => Issue(
         id: map['id'] as String,
@@ -94,5 +133,10 @@ class Issue {
         latitude: (map['latitude'] as num).toDouble(),
         longitude: (map['longitude'] as num).toDouble(),
         supportedByMe: (map['supported'] ?? 0) == 1,
+        createdAt: _toDate(map['createdAt']),
+        reachedAt: _toDate(map['reachedAt']),
+        noticeGeneratedAt: _toDate(map['noticeGeneratedAt']),
+        decisionAt: _toDate(map['decisionAt']),
+        decision: map['decision'] as String?,
       );
 }

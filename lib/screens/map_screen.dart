@@ -71,8 +71,7 @@ class _MapScreenState extends State<MapScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Não foi possível carregar as ocorrências.'),
-          action:
-              SnackBarAction(label: 'Tentar novamente', onPressed: _loadIssues),
+          action: SnackBarAction(label: 'Tentar novamente', onPressed: _loadIssues),
         ),
       );
     }
@@ -100,8 +99,7 @@ class _MapScreenState extends State<MapScreen> {
       // Política de uso do Nominatim: no máximo 1 requisição por segundo.
       await Future.delayed(const Duration(milliseconds: 1100));
       final destination = await _routeService.geocode(to);
-      final route = await _routeService.fetchRoute(
-          origin.location, destination.location, _mode);
+      final route = await _routeService.fetchRoute(origin.location, destination.location, _mode);
       if (!mounted) return;
 
       setState(() {
@@ -185,8 +183,7 @@ class _MapScreenState extends State<MapScreen> {
           child: Icon(
             Icons.location_on,
             size: 40,
-            color:
-                issue.reachedThreshold ? AppColors.success : AppColors.danger,
+            color: issue.hasNotice ? AppColors.success : AppColors.danger,
           ),
         ),
       );
@@ -202,19 +199,16 @@ class _MapScreenState extends State<MapScreen> {
     final markers = <Marker>[];
     if (_showIssues) {
       // Com rota, mostra só o que está no trajeto; sem rota, mostra todas.
-      final visible =
-          _route == null ? _issues : _routeIssues.map((r) => r.issue).toList();
+      final visible = _route == null ? _issues : _routeIssues.map((r) => r.issue).toList();
       markers.addAll(visible.map(_issueMarker));
     }
     final origin = _originPlace;
     final destination = _destinationPlace;
     if (_route != null && origin != null) {
-      markers.add(
-          _pointMarker(origin.location, Icons.trip_origin, AppColors.success));
+      markers.add(_pointMarker(origin.location, Icons.trip_origin, AppColors.success));
     }
     if (_route != null && destination != null) {
-      markers.add(
-          _pointMarker(destination.location, Icons.flag, AppColors.primary));
+      markers.add(_pointMarker(destination.location, Icons.flag, AppColors.primary));
     }
     return markers;
   }
@@ -241,10 +235,7 @@ class _MapScreenState extends State<MapScreen> {
               if (route != null)
                 PolylineLayer(
                   polylines: [
-                    Polyline(
-                        points: route.points,
-                        strokeWidth: 5,
-                        color: AppColors.primary),
+                    Polyline(points: route.points, strokeWidth: 5, color: AppColors.primary),
                   ],
                 ),
               MarkerLayer(markers: _buildMarkers()),
@@ -263,13 +254,11 @@ class _MapScreenState extends State<MapScreen> {
               isLoading: _routeState == RequestState.loading,
               hasRoute: route != null,
               onModeChanged: (mode) => setState(() => _mode = mode),
-              onShowIssuesChanged: (value) =>
-                  setState(() => _showIssues = value),
+              onShowIssuesChanged: (value) => setState(() => _showIssues = value),
               onSubmit: _traceRoute,
               onClear: _clearRoute,
               onSwap: _swapPlaces,
-              onToggleExpanded: () =>
-                  setState(() => _searchExpanded = !_searchExpanded),
+              onToggleExpanded: () => setState(() => _searchExpanded = !_searchExpanded),
             ),
           ),
           Positioned(

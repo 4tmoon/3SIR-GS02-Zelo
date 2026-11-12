@@ -7,6 +7,7 @@ class AppColors {
   static const border = Color(0xFFE3E5EF);
   static const textMuted = Color(0xFF6B7280);
   static const danger = Color(0xFFC62828);
+  static const dangerSoft = Color(0xFFFDECEC);
   static const success = Color(0xFF2E7D32);
   static const successSoft = Color(0xFFE8F5E9);
 }
@@ -29,7 +30,6 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
       ),

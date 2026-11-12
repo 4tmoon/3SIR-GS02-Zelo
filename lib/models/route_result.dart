@@ -4,7 +4,6 @@ import 'issue.dart';
 
 enum TravelMode { walking, driving }
 
-/// Modelo do JSON de rota retornado pelo OSRM.
 class RouteResult {
   final List<LatLng> points;
   final double distanceMeters;

@@ -4,7 +4,6 @@ import '../database/app_database.dart';
 import '../models/issue.dart';
 import '../services/route_service.dart';
 
-/// Regras de negócio das ocorrências (as telas só chamam estes métodos).
 class IssueRepository {
   IssueRepository._();
   static final IssueRepository instance = IssueRepository._();
@@ -28,20 +27,26 @@ class IssueRepository {
   }
 
   List<Issue> officialNotices(List<Issue> issues) =>
-      issues.where((issue) => issue.reachedThreshold).toList();
+      issues.where((issue) => issue.hasNotice).toList();
 
-  /// Apoia ou remove o apoio e atualiza o status conforme a meta de 80%.
   Future<Issue> toggleSupport(Issue issue) async {
     final supported = !issue.supportedByMe;
     var updated = issue.copyWith(
       likes: issue.likes + (supported ? 1 : -1),
       supportedByMe: supported,
     );
-    updated = updated.copyWith(
-      status: updated.reachedThreshold
-          ? IssueStatus.formal
-          : IssueStatus.collecting,
-    );
+    if (updated.reachedAt == null) {
+      if (updated.reachedThreshold) {
+        final now = DateTime.now();
+        updated = updated.copyWith(
+          status: IssueStatus.formal,
+          reachedAt: now,
+          noticeGeneratedAt: now,
+        );
+      } else {
+        updated = updated.copyWith(status: IssueStatus.collecting);
+      }
+    }
     await _db.update(updated);
     return updated;
   }
@@ -55,8 +60,6 @@ class IssueRepository {
   }) async {
     final id = DateTime.now().millisecondsSinceEpoch.toString();
 
-    // Localização real a partir do endereço; se a busca falhar, usa uma posição
-    // aproximada no centro de SP (com pequena variação para os pinos não se sobreporem).
     final random = Random();
     var latitude = -23.5505 + (random.nextDouble() - 0.5) * 0.04;
     var longitude = -46.6333 + (random.nextDouble() - 0.5) * 0.04;
@@ -80,6 +83,7 @@ class IssueRepository {
       latitude: latitude,
       longitude: longitude,
       supportedByMe: true,
+      createdAt: DateTime.now(),
     );
     await _db.insert(issue);
     return issue;

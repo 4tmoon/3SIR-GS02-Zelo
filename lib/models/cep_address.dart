@@ -1,4 +1,3 @@
-/// Modelo do JSON retornado pela API ViaCEP.
 class CepAddress {
   final String cep;
   final String street;

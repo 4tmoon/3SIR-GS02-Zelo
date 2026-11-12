@@ -7,6 +7,7 @@ import '../services/notice_pdf_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_card.dart';
 import '../widgets/state_views.dart';
+import '../widgets/status_badge.dart';
 import 'issue_detail_screen.dart';
 import 'notice_preview_screen.dart';
 
@@ -49,18 +50,32 @@ class _NoticesScreenState extends State<NoticesScreen> {
     final messenger = ScaffoldMessenger.of(context);
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(
-          content: Text('Gerando PDF...'), duration: Duration(seconds: 2)));
+      ..showSnackBar(const SnackBar(content: Text('Gerando PDF...'), duration: Duration(seconds: 2)));
     try {
       final bytes = await _pdfService.build(issue);
-      await Printing.sharePdf(
-          bytes: bytes, filename: _pdfService.fileName(issue));
+      await Printing.sharePdf(bytes: bytes, filename: _pdfService.fileName(issue));
     } catch (_) {
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-            const SnackBar(content: Text('Não foi possível gerar o PDF.')));
+        ..showSnackBar(const SnackBar(content: Text('Não foi possível gerar o PDF.')));
     }
+  }
+
+  Widget _decisionBadge(Issue issue) {
+    if (issue.decision == IssueDecision.accepted) {
+      return const StatusBadge(
+        label: 'Aceita pela prefeitura',
+        icon: Icons.verified,
+        color: AppColors.success,
+        background: Colors.white,
+      );
+    }
+    return const StatusBadge(
+      label: 'Aguardando resposta',
+      icon: Icons.hourglass_top,
+      color: AppColors.textMuted,
+      background: Colors.white,
+    );
   }
 
   @override
@@ -70,17 +85,13 @@ class _NoticesScreenState extends State<NoticesScreen> {
       body: FutureBuilder<List<Issue>>(
         future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return const LoadingView();
+          if (snapshot.connectionState == ConnectionState.waiting) return const LoadingView();
           if (snapshot.hasError) {
-            return ErrorView(
-                message: 'Não foi possível carregar os ofícios.',
-                onRetry: _reload);
+            return ErrorView(message: 'Não foi possível carregar os ofícios.', onRetry: _reload);
           }
           final notices = _repository.officialNotices(snapshot.data ?? []);
           if (notices.isEmpty) {
-            return const EmptyView(
-                icon: Icons.gavel, message: 'Nenhum ofício gerado ainda.');
+            return const EmptyView(icon: Icons.gavel, message: 'Nenhum ofício gerado ainda.');
           }
           return ListView.separated(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -104,23 +115,20 @@ class _NoticesScreenState extends State<NoticesScreen> {
                             children: [
                               Text(
                                 'Ofício Nº ${_pdfService.noticeNumber(notice)}',
-                                style: const TextStyle(
-                                    fontSize: 11, color: AppColors.textMuted),
+                                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                               ),
-                              Text(notice.title,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w700)),
+                              Text(notice.title, style: const TextStyle(fontWeight: FontWeight.w700)),
                               const SizedBox(height: 2),
                               Text(
                                 '${notice.address} • ${(notice.progress * 100).round()}% de apoio',
-                                style: const TextStyle(
-                                    fontSize: 12, color: AppColors.textMuted),
+                                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                               ),
+                              const SizedBox(height: 6),
+                              _decisionBadge(notice),
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right,
-                            color: AppColors.textMuted),
+                        const Icon(Icons.chevron_right, color: AppColors.textMuted),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -129,8 +137,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () => _openPreview(notice),
-                            icon: const Icon(Icons.picture_as_pdf_outlined,
-                                size: 18),
+                            icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
                             label: const Text('Visualizar'),
                           ),
                         ),

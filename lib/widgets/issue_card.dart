@@ -7,7 +7,6 @@ import 'app_network_image.dart';
 import 'status_badge.dart';
 import 'support_progress.dart';
 
-/// Card do feed: foto em destaque no topo e informações abaixo.
 class IssueCard extends StatelessWidget {
   final Issue issue;
   final VoidCallback onTap;
@@ -26,7 +25,7 @@ class IssueCard extends StatelessWidget {
             children: [
               AppNetworkImage(url: issue.imageUrl, width: double.infinity, height: 170, radius: 0),
               Positioned(top: 10, left: 10, child: StatusBadge(label: issue.category, background: Colors.white)),
-              if (issue.reachedThreshold)
+              if (issue.hasNotice)
                 const Positioned(
                   top: 10,
                   right: 10,
