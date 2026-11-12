@@ -134,6 +134,7 @@ class AppDatabase {
       required DateTime created,
       DateTime? reached,
       DateTime? accepted,
+      required String imageName,
     }) {
       return Issue(
         id: id,
@@ -141,7 +142,7 @@ class AppDatabase {
         description: description,
         category: category,
         address: address,
-        imageUrl: 'https://picsum.photos/seed/zelo$id/400/240',
+        imageUrl: 'assets/images/$imageName',
         likes: likes,
         activeRegionalUsers: active,
         status: accepted != null
@@ -166,6 +167,7 @@ class AppDatabase {
         address: 'Av. Paulista, 1000 - SP',
         likes: 35, active: 50, lat: -23.5614, lng: -46.6559,
         created: days(3),
+        imageName: 'calcada-com-buraco.jpg',
       ),
       seed(
         id: '3',
@@ -175,6 +177,7 @@ class AppDatabase {
         address: 'Praça da Sé - SP',
         likes: 12, active: 40, lat: -23.5503, lng: -46.6339,
         created: days(2),
+        imageName: 'sem-rampa-de-acesso.jpg',
       ),
       seed(
         id: '4',
@@ -184,15 +187,7 @@ class AppDatabase {
         address: 'Av. Pedro Álvares Cabral - SP',
         likes: 20, active: 60, lat: -23.5874, lng: -46.6576,
         created: days(1),
-      ),
-      seed(
-        id: '8',
-        title: 'Piso tátil danificado',
-        description: 'O piso tátil está quebrado e pessoas com deficiência visual correm risco de queda.',
-        category: IssueCategory.accessibility,
-        address: 'Rua Vergueiro, 1200 - SP',
-        likes: 38, active: 50, lat: -23.5748, lng: -46.6419,
-        created: days(6), // faltam só 2 apoios para a meta
+        imageName: 'avenida-com-buraco.jpg',
       ),
       seed(
         id: '9',
@@ -202,6 +197,7 @@ class AppDatabase {
         address: 'Av. Santo Amaro, 3000 - SP',
         likes: 8, active: 30, lat: -23.6076, lng: -46.6718,
         created: now.subtract(const Duration(hours: 5)),
+        imageName: 'ponto-de-onibus.jpg',
       ),
       seed(
         id: '11',
@@ -211,6 +207,7 @@ class AppDatabase {
         address: 'Praça Roosevelt - SP',
         likes: 22, active: 50, lat: -23.5509, lng: -46.6504,
         created: days(4),
+        imageName: 'poste-sem-luz.jpg',
       ),
       seed(
         id: '6',
@@ -221,6 +218,7 @@ class AppDatabase {
         likes: 41, active: 50, lat: -23.5527, lng: -46.6602,
         created: days(9),
         reached: days(2),
+        imageName: 'bueiro-entupido.jpg',
       ),
       seed(
         id: '10',
@@ -231,6 +229,7 @@ class AppDatabase {
         likes: 25, active: 30, lat: -23.5445, lng: -46.6338,
         created: days(8),
         reached: days(5),
+        imageName: 'escada-sem-corrimao.jpg',
       ),
       seed(
         id: '2',
@@ -242,6 +241,7 @@ class AppDatabase {
         created: days(12),
         reached: days(6),
         accepted: days(2),
+        imageName: 'poste-sem-luz.jpg',
       ),
       seed(
         id: '5',
@@ -253,6 +253,7 @@ class AppDatabase {
         created: days(20),
         reached: days(12),
         accepted: days(3),
+        imageName: 'semaforo-quebrado.jpg',
       ),
       seed(
         id: '7',
@@ -264,6 +265,7 @@ class AppDatabase {
         created: days(30),
         reached: days(21),
         accepted: days(8),
+        imageName: 'faixa-pedestre.jpg',
       ),
     ];
   }

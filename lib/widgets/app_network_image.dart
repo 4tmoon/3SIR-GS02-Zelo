@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_theme.dart';
 
-/// Image.network com indicador de carregamento e imagem de reserva em caso de erro.
 class AppNetworkImage extends StatelessWidget {
   final String url;
   final double? width;
@@ -27,6 +25,21 @@ class AppNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (url.startsWith('assets/') || url.startsWith('images/')) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: Image.asset(
+          url,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) => _placeholder(
+            const Icon(Icons.image_not_supported_outlined, color: AppColors.textMuted),
+          ),
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Image.network(
